@@ -9,16 +9,23 @@ open Syntax
 %token <int> INTV
 %token <Syntax.id> ID
 
+%token LET IN EQ
+
 %start toplevel
 %type <Syntax.program> toplevel
 %%
 
 toplevel :
     e=Expr SEMISEMI { Exp e }
+  | LET x=ID EQ e=Expr SEMISEMI { Decl (x, e) }
 
 Expr :
     e=IfExpr { e }
+  | e=LetExpr { e } 
   | e=LTExpr { e }
+
+LetExpr : 
+    LET x=ID EQ e1=Expr IN e2=Expr { LetExp (x, e1, e2) } 
 
 LTExpr :
     l=PExpr LT r=PExpr { BinOp (Lt, l, r) }
