@@ -10,6 +10,7 @@ open Syntax
 %token <Syntax.id> ID
 
 %token LET IN EQ
+%token RARROW FUN (* New! *)
 
 %start toplevel
 %type <Syntax.program> toplevel
@@ -23,6 +24,10 @@ Expr :
     e=IfExpr { e }
   | e=LetExpr { e } 
   | e=LTExpr { e }
+  | e=FunExpr{ e }
+
+FunExpr:
+    FUN e1=ID RARROW e2=Expr { FunExp (e1, e2) }
 
 LetExpr : 
     LET x=ID EQ e1=Expr IN e2=Expr { LetExp (x, e1, e2) } 
@@ -34,9 +39,14 @@ LTExpr :
 PExpr :
     l=PExpr PLUS r=MExpr { BinOp (Plus, l, r) }
   | e=MExpr { e }
-
+ 
 MExpr :
-    l=MExpr MULT r=AExpr { BinOp (Mult, l, r) }
+    e1=MExpr MULT e2=AppExpr { BinOp (Mult, e1, e2) }
+  | e=AppExpr { e } (* New! *)
+
+(* New! *)
+AppExpr :
+    e1=AppExpr e2=AExpr { AppExp (e1, e2) }
   | e=AExpr { e }
 
 AExpr :

@@ -3,6 +3,7 @@ open Syntax
 type exval =
     IntV of int
   | BoolV of bool
+  | ProcV of id * exp * dnval Environment.t (* New! クロージャが作成された時点の環境をデータ構造に含めている．*)
 and dnval = exval
 
 exception Error of string
@@ -41,6 +42,23 @@ let rec eval_exp env = function
      | BoolV false -> eval_exp env exp3
      | _ -> err ("Test expression must be boolean: if"))
   | LetExp (id, exp1, exp2) -> let value = eval_exp env exp1 in eval_exp (Environment.extend id value env)exp2
+  (* 関数定義式: 現在の環境 env をクロージャ内に保存 *)
+  | FunExp (id, exp) -> ProcV (id, exp, env)
+  (* 関数適用式 *)
+  | AppExp (exp1, exp2) ->
+      (* 関数 exp1 を現在の環境で評価 *)
+      let funval = eval_exp env exp1 in
+      (* 実引数 exp2 を現在の環境で評価 *)
+      let arg = eval_exp env exp2 in
+      (* 関数 exp1 の評価結果をパターンマッチで取り出す *)
+      (match funval with
+          ProcV (id, body, env') -> (* 評価結果が実際にクロージャであれば *)
+              (* クロージャ内の環境を取り出して仮引数に対する束縛で拡張 *)
+              let newenv = Environment.extend id arg env' in
+                eval_exp newenv body
+        | _ -> 
+          (* 評価結果がクロージャでなければ，実行時型エラー *)
+          err ("Non-function value is applied"))
 
 let eval_decl env = function
     Exp e -> let v = eval_exp env e in ("-", env, v)

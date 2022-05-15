@@ -10,6 +10,8 @@ type exp =
   | BinOp of binOp * exp * exp
   | IfExp of exp * exp * exp
   | LetExp of id * exp * exp
+  | FunExp of id * exp (* New! *)
+  | AppExp of exp * exp (* New! *)
 
 type program =
     Exp of exp
