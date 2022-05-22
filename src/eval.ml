@@ -3,7 +3,7 @@ open Syntax
 type exval =
     IntV of int
   | BoolV of bool
-  | ProcV of id * exp * dnval Environment.t (* New! クロージャが作成された時点の環境をデータ構造に含めている．*)
+  | ProcV of id * exp * dnval Environment.t ref 
 and dnval = exval
 
 exception Error of string
@@ -14,6 +14,7 @@ let err s = raise (Error s)
 let rec string_of_exval = function
     IntV i -> string_of_int i
   | BoolV b -> string_of_bool b
+  | ProcV (x, e, v) -> " <fun> "
 
 let pp_val v = print_string (string_of_exval v)
 
@@ -43,7 +44,7 @@ let rec eval_exp env = function
      | _ -> err ("Test expression must be boolean: if"))
   | LetExp (id, exp1, exp2) -> let value = eval_exp env exp1 in eval_exp (Environment.extend id value env)exp2
   (* 関数定義式: 現在の環境 env をクロージャ内に保存 *)
-  | FunExp (id, exp) -> ProcV (id, exp, env)
+  | FunExp (id, exp) -> ProcV (id, exp, ref env)
   (* 関数適用式 *)
   | AppExp (exp1, exp2) ->
       (* 関数 exp1 を現在の環境で評価 *)
@@ -54,12 +55,26 @@ let rec eval_exp env = function
       (match funval with
           ProcV (id, body, env') -> (* 評価結果が実際にクロージャであれば *)
               (* クロージャ内の環境を取り出して仮引数に対する束縛で拡張 *)
-              let newenv = Environment.extend id arg env' in
+              let newenv = Environment.extend id arg !env' in
                 eval_exp newenv body
         | _ -> 
           (* 評価結果がクロージャでなければ，実行時型エラー *)
           err ("Non-function value is applied"))
+  | LetRecExp (id, para, exp1, exp2) ->
+    (* ダミーの環境への参照を作る *)
+    let dummyenv = ref Environment.empty in
+    (* 関数閉包を作り，idをこの関数閉包に写像するように現在の環境envを拡張 *)
+    let newenv = Environment.extend id (ProcV (para, exp1, dummyenv)) env in
+    (* ダミーの環境への参照に，拡張された環境を破壊的代入してバックパッチ *)
+        dummyenv := newenv;
+        eval_exp newenv exp2
 
 let eval_decl env = function
     Exp e -> let v = eval_exp env e in ("-", env, v)
   | Decl (id, e) -> let v = eval_exp env e in (id, Environment.extend id v env, v)
+  | RecDecl (id, para, e) ->
+    let dummyenv = ref Environment.empty in
+    let newenv = Environment.extend id (ProcV (para, e, dummyenv)) env in
+    let v =  (ProcV(para, e, dummyenv)) in 
+    dummyenv := newenv;
+    (id, newenv, v)

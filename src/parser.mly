@@ -10,6 +10,7 @@ open Syntax
 %token <Syntax.id> ID
 
 %token LET IN EQ
+%token REC
 %token RARROW FUN (* New! *)
 
 %start toplevel
@@ -19,12 +20,17 @@ open Syntax
 toplevel :
     e=Expr SEMISEMI { Exp e }
   | LET x=ID EQ e=Expr SEMISEMI { Decl (x, e) }
+  | LET REC x=ID EQ FUN y=ID RARROW e=Expr SEMISEMI { RecDecl (x, y, e) }
 
 Expr :
     e=IfExpr { e }
   | e=LetExpr { e } 
+  | e=LetRecExpr { e }
   | e=LTExpr { e }
   | e=FunExpr{ e }
+
+LetRecExpr :
+    LET REC x=ID EQ FUN y=ID RARROW e1=Expr IN e2=Expr { LetRecExp ( x, y, e1, e2) }
 
 FunExpr:
     FUN e1=ID RARROW e2=Expr { FunExp (e1, e2) }
