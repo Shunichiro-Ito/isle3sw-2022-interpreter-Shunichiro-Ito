@@ -27,11 +27,20 @@ type ty =
   | TyFun of ty * ty
   | TyList of ty
 
+(* ty 型の値のための pretty printer *)
+let pp_ty typ =
+  match typ with
+    TyInt -> print_string "int"
+  | TyBool -> print_string "bool"
+
 let freevar_ty _ =
   assert false (* Exercise 4.3.1 *)
 
-let string_of_ty _ =
-  assert false (* Exercise 4.3.1 *)
+let string_of_ty typ =
+  match typ with
+  TyInt -> "int"
+| TyBool -> "bool"
+
 
 let pp_ty ty =
   print_string (string_of_ty ty)
