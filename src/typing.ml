@@ -7,6 +7,8 @@ let err s = raise (Error s)
 (* Type Environment *)
 type tyenv = ty Environment.t
 
+type subst = (tyvar * ty) list
+
 let ty_prim op ty1 ty2 = match op with
     Plus -> (match ty1, ty2 with 
                  TyInt, TyInt -> TyInt
@@ -18,8 +20,18 @@ let ty_prim op ty1 ty2 = match op with
                  TyInt, TyInt -> TyBool
                | _ -> err ("Argument must be of integer: +"))
 
-let subst_type _ =
-  assert false (* Exercise 4.3.2 *)
+let hd (x::rest) = x
+let tl (x::rest) = rest
+
+let rec subst_type s ty =
+  match s with
+    [] -> ty
+    | _ -> (match ty with
+              TyFun(a,b) -> TyFun((subst_type s a), (subst_type s b))
+              | TyVar x -> let(var, typ) = hd s in if x=var then subst_type (tl s) typ else subst_type (tl s) ty
+              | _ -> ty)
+
+
 
 let unify _ =
   assert false (* Exercise 4.3.3 *)
