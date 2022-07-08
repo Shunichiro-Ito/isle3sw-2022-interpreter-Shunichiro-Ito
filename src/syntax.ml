@@ -12,7 +12,7 @@ type exp =
   | LetExp of id * exp * exp
   | LetMultExp of (id * exp) * exp
   | FunExp of id * exp
-  | DFunExp of id * exp (*実装できなかった*)
+  | DFunExp of id * exp
   | AppExp of exp * exp
   | LetRecExp of id * id * exp * exp
 

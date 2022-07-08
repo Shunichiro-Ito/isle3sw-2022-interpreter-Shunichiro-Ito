@@ -29,7 +29,7 @@ rule main = parse
 | "*" { Parser.MULT }
 | "<" { Parser.LT }
 | "=" { Parser.EQ } 
-| "->" { Parser.RARROW }
+| "->" { Parser.RARROW } (* New! *)
 | "&&" { Parser.AND } (*3.2.3 &&の実装*)
 | "||" { Parser.OR } (*3.2.3 ||の実装*)
 
