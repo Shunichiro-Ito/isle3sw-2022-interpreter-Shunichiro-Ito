@@ -72,7 +72,7 @@ let typing input =
   Exec.exec
     (fun env program ->
        (* let env, ty = ty_decl env program *)
-       let env, ty = ty_decl env program in
+       let ty = ty_decl env program in
        env, ty)
     Cui.initial_tyenv
     input
