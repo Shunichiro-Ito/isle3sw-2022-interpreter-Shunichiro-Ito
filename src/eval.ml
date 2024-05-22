@@ -40,7 +40,7 @@ let rec eval_exp env = function
   | BLit b -> BoolV b
   | BinOp (op, exp1, exp2) ->
     let arg1 = eval_exp env exp1 in(
-      if(op = And && arg1 = BoolV false) then BoolV false  (*3.2.3 前半だけで評価値が決まる場合はそれを出力する*)
+      if(op = And && arg1 = BoolV false) then BoolV false  (*3.2.3 前半だけで評価値が決まる場合はそれを出力するjfeiojioj*)
       else if(op = Or && arg1 = BoolV true) then BoolV true
       else let arg2 = eval_exp env exp2 in 
       apply_prim op arg1 arg2
